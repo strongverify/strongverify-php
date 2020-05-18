@@ -1,0 +1,32 @@
+{
+  "version": "0.0.1",
+  "envprefix": "svv",
+  "server": {
+    "interface": "1.0.0.1",
+    "port": 3003
+  },
+  "database": {
+    "host": "1.0.0.2",
+    "port": 4321,
+    "username": "tester",
+    "password": "testerpwd",
+    "db": "throw-away",
+    "ormconfig": {
+      "logging": true,
+      "extra": {
+        "max": 2
+      }
+    }
+  },
+  "auth":  {
+    "issuer": "https://some.url",
+    "configpath": "/path/to/config"
+  },
+  "storage": {
+    "bucket": "pail",
+    "prefix": "fester"
+  },
+  "ml": {
+    "preprocessorUrl": "https://bladiba.bla/bla"
+  }
+}

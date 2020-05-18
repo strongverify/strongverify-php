@@ -1,0 +1,30 @@
+{
+    "name": "strongverify/sdk-php",
+    "type": "standard",
+    "description": "strongverify.com API wrapper as a standalone PHP package",
+    "homepage": "https://github.com/strongverify/strongverify-php",
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1.0",
+        "guzzlehttp/guzzle": "~6.0",
+        "auth0/auth0-php": "^7.2",
+        "josegonzalez/dotenv": "^3.2"
+    },
+    "require-dev": {
+        "pds/skeleton": "^1.0",
+        "phpunit/phpunit": "^9.1",
+        "sempro/phpunit-pretty-print": "^1.2",
+        "codedungeon/phpunit-result-printer": "^0.27.0",
+        "fzaninotto/faker": "^1.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "StrongVerify\\SDK\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "StrongVerify\\SDK\\": "tests/"
+        }
+    }
+}
