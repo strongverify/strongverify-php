@@ -111,7 +111,7 @@ class StrongVerify
 
     }
 
-    public function version()
+    public function getVersion()
     {
         $result = $this->get('version');
         return $result;
@@ -165,9 +165,14 @@ class StrongVerify
         return $result->id;
     }
 
-    public function getClient($id)
+    public function getClient($id, $nationalId=false)
     {
         $operation = $this->getOperation('client/'.$id);
+
+        if ($nationalId){
+            $operation .= '/nationalid';
+        }
+
         $result = $this->get($operation);
         return $result;
     }
@@ -263,7 +268,7 @@ class StrongVerify
 
     }
 
-    public function downloadDocument($ref, $filename)
+    public function downloadDocument($ref, $filename, $version='original')
     {
         if (empty($ref)){
             throw new \Exception('You must include a document reference');
@@ -271,7 +276,7 @@ class StrongVerify
 
         $fp = fopen($filename, 'w');
 
-        $operation = $this->getOperation('document/'.$ref.'/download');
+        $operation = $this->getOperation("document/$ref/download?document=$version");
         $result = $this->download($operation, $fp);
 
         return $result;
@@ -412,6 +417,8 @@ class StrongVerify
         if (isset($this->auth0JWToken) && is_string($this->auth0JWToken)){
             $headers['Authorization']='Bearer '.$this->auth0JWToken;
         }
+        
+        //echo $operation . "\n";
 
         try {
        

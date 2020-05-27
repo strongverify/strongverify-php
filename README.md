@@ -1,7 +1,7 @@
 strongverify-php
 ================
 
-This is a stand-alone php SDK for strongverify.com. It is a PSR-4 compliant PHP pakcage installed using composer.
+This is a stand-alone php SDK for strongverify.com. It is a PSR-4 compliant PHP package installed using composer.
 
 Installation
 ------------
@@ -24,7 +24,7 @@ export SV_API_BASE_URI=__the_sv_base_api_uri__
 Tests
 -----
 
-We provide unit tests as part of the package. This may be used to verify successful installation. From the pacakge install directory (usually something like `vendor/strongverify/strongverify-php`)  you may run:
+We provide unit tests as part of the package. This may be used to verify successful installation. From the package install directory (usually something like `vendor/strongverify/strongverify-php`)  you may run:
 ```
 vendor/bin/phpunit ./tests
 ```

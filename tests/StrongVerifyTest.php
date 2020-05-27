@@ -17,6 +17,7 @@ class StrongVerifyTest extends TestCase
     public static $testClient;
     public static $testAddress;
     public static $realClient;
+    public static $realAddress;
     
     private $faker;
 
@@ -72,6 +73,17 @@ class StrongVerifyTest extends TestCase
             'latitude'      => $this->faker->latitude(),
             'longitude'     => $this->faker->longitude()
         ]; 
+
+        // a random address to be used for tests
+        self::$realAddress = [
+            'streetNumber'  => '177A',
+            'street'        => 'Bleecker Street',       
+            'city'          => 'Stellenbosch',
+            'code'          => '7600',
+            'province'      => 'Western Cape',
+            'country'       => 'South Africa'
+        ]; 
+
 
     }
 
@@ -198,6 +210,13 @@ class StrongVerifyTest extends TestCase
 
     }
 
+    // public function testThatWeCanGetTheVersion()
+    // {
+    //     $strongVerify = new StrongVerify(self::$baseConfig);
+    //     $result = $strongVerify->getVersion();
+        
+    // }
+
     public function testThatWeCanGetAnOAuthToken()
     {
         
@@ -229,7 +248,7 @@ class StrongVerifyTest extends TestCase
     //     //$this->assertTrue(is_string($clientId));
 
     // }
-
+    
     public function testThatWeCanCreateAndRetrieveAClient()
     {
 
@@ -260,6 +279,37 @@ class StrongVerifyTest extends TestCase
 
         }
 
+    }
+
+    public function testThatWeCanGetClientUsingNationalId()
+    {
+        $strongVerify = new StrongVerify(self::$baseConfig);
+        $token = $strongVerify->getToken();
+        $testClient = self::$testClient;
+        $clientId = $strongVerify->createClient($testClient);
+
+        try {
+
+            $client = $strongVerify->getClient($testClient['identityNumber'], true);
+            
+            $this->assertTrue(is_object($client));
+            $this->assertTrue($client->statusCode==200);
+            $this->assertTrue($client->reasonPhrase=='OK');
+            
+            foreach ($testClient as $key => $value){
+            
+                $this->assertTrue(isset($client->$key));
+                $this->assertTrue($client->$key == $testClient[$key]);
+
+            }
+
+        }finally{
+
+            $result = $strongVerify->deleteClient($clientId);
+            $this->assertTrue(is_string($result));
+
+        }
+        
     }
 
     public function testThatWeCanCRUDAnAddress()
@@ -422,6 +472,70 @@ class StrongVerifyTest extends TestCase
             // download
             $filename = 'tests/results/'.$ref.'-id-example-01.jpg';
             $result = $strongVerify->downloadDocument($ref, $filename);
+            $this->assertTrue(file_exists($filename));
+            
+            if (!getenv('SV_SAVE_RESULTS')){
+                unlink($filename);
+            }
+        
+        }finally{
+
+            $result = $strongVerify->deleteClient($clientId);
+            $this->assertTrue(is_string($result));
+
+        }
+    
+    }
+
+    public function testThatWeCanUploadAndProcessAValidBankStatement()
+    {
+
+        // set up new client
+        $strongVerify = new StrongVerify(self::$baseConfig);
+        $strongVerify->getToken();
+        $clientId = $strongVerify->createClient(self::$realClient);
+        $this->assertTrue(is_string($clientId));
+
+        $result = $strongVerify->createAddress($clientId, self::$realAddress);
+
+        try {
+
+            // upload doc
+            // statement|sa_green_barcode_id|account|sa_smart_card_id
+            $ref = $strongVerify->uploadDocument($clientId, array(
+                'doctype' => 'statement',
+                'filename' => 'tests/resources/test-statement.png'
+            ));
+            $this->assertTrue(is_string($ref));
+
+            $state = $strongVerify->getDocumentStatus($ref);
+            $this->assertTrue($state=='UPLOADED');
+
+            $state = $strongVerify->processDocument($ref);
+            //var_dump($state);
+            $this->assertTrue($state=='VERIFIED');
+
+            // get info
+            $tasks = array('validation', 'preprocessor', 'ocr');
+
+            if (getenv('SV_SAVE_RESULTS')){
+
+                foreach ($tasks as $task){
+
+                    $result = $strongVerify->getDocumentInfo($ref, $task);
+                    file_put_contents('tests/results/valid-'.$ref.'-'.$task.'.json', json_encode($result));
+
+                }
+
+            }
+
+            // download
+            $filename = 'tests/results/'.$ref.'-test-statement.png';
+            $result = $strongVerify->downloadDocument($ref, $filename);
+            $this->assertTrue(file_exists($filename));
+
+            $filename = 'tests/results/'.$ref.'-test-statement-annotated.png';
+            $result = $strongVerify->downloadDocument($ref, $filename, 'annotated');
             $this->assertTrue(file_exists($filename));
             
             if (!getenv('SV_SAVE_RESULTS')){
